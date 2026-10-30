@@ -1,857 +1,763 @@
-import { useState } from 'react'
-import './App.css'
+import { useEffect, useMemo, useState } from "react";
+import "./App.css";
 
-const navItems = [
-  { label: 'Inicio', href: '#inicio' },
-  { label: 'Nosotros', href: '#nosotros' },
-  { label: 'Catálogo', href: '#catalogo' },
-  { label: 'Servicios', href: '#servicios' },
-  { label: 'Contacto', href: '#contacto' },
-]
+const WHATSAPP = "525648222903"; 
+const FACEBOOK = "https://www.facebook.com/share/1c2fbPmC18/";
 
-const categories = [
-  { label: 'Todo', icon: 'apps' },
-  { label: 'Papelería Escolar', icon: 'school' },
-  { label: 'BIC', icon: 'edit_note' },
-  { label: 'Oficina', icon: 'corporate_fare' },
-  { label: 'Arte y manualidades', icon: 'palette' },
-  { label: 'Material escolar', icon: 'backpack' },
-  { label: 'Impresiones', icon: 'print' },
-]
 
-const createProductArt = (kind) => {
-  const drawings = {
-    pen: `
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='800' height='800' fill='#f7f9ff'/>
-        <g>
-          <rect x='230' y='120' width='340' height='520' rx='28' fill='#0d3b9d'/>
-          <rect x='315' y='28' width='170' height='160' rx='22' fill='#1d4ed8'/>
-          <rect x='328' y='65' width='145' height='90' rx='18' fill='#dfe7ff'/>
-          <rect x='420' y='190' width='64' height='240' rx='18' fill='#dfe7ff'/>
-          <rect x='316' y='190' width='64' height='240' rx='18' fill='#f8fafc'/>
-          <path d='M280 680h240l-42 90H322z' fill='#0f172a'/>
-          <circle cx='400' cy='620' r='24' fill='#f8fafc'/>
-          <path d='M400 240v220' stroke='#0d3b9d' stroke-width='18' stroke-linecap='round'/>
-        </g>
-      </svg>
-    `,
-    marker: `
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='800' height='800' fill='#f9fbff'/>
-        <g>
-          <rect x='200' y='110' width='400' height='500' rx='40' fill='#f59e0b'/>
-          <rect x='260' y='40' width='280' height='160' rx='26' fill='#fbbf24'/>
-          <rect x='300' y='215' width='200' height='280' rx='20' fill='#fff7ed'/>
-          <rect x='250' y='520' width='300' height='90' rx='22' fill='#fef3c7'/>
-          <path d='M200 610h400l-55 110H255z' fill='#78350f'/>
-          <circle cx='400' cy='370' r='70' fill='#fef3c7' opacity='.88'/>
-          <path d='M400 297v146' stroke='#f59e0b' stroke-width='22' stroke-linecap='round'/>
-          <path d='M327 370h146' stroke='#f59e0b' stroke-width='22' stroke-linecap='round'/>
-        </g>
-      </svg>
-    `,
-    notebook: `
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='800' height='800' fill='#f5f7ff'/>
-        <g>
-          <rect x='180' y='120' width='440' height='560' rx='36' fill='#dfeaff'/>
-          <rect x='220' y='160' width='360' height='480' rx='20' fill='#ffffff'/>
-          <g stroke='#9bb8ff' stroke-width='10'><path d='M280 210v400M340 210v400M400 210v400M460 210v400M520 210v400'/></g>
-          <g fill='#b9cbff'>
-            <circle cx='260' cy='210' r='18'/><circle cx='260' cy='290' r='18'/><circle cx='260' cy='370' r='18'/><circle cx='260' cy='450' r='18'/><circle cx='260' cy='530' r='18'/>
-          </g>
-          <rect x='220' y='160' width='360' height='70' rx='12' fill='#0d3b9d'/>
-          <text x='400' y='205' text-anchor='middle' fill='white' font-size='32' font-family='Arial, sans-serif' font-weight='700'>CUADERNO</text>
-        </g>
-      </svg>
-    `,
-    folder: `
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='800' height='800' fill='#f6f9ff'/>
-        <g>
-          <path d='M120 240c0-25 20-45 45-45h110l55 60h350c25 0 45 20 45 45v250c0 25-20 45-45 45H165c-25 0-45-20-45-45V240z' fill='#1d4ed8'/>
-          <path d='M120 300h560l-40 280H165c-25 0-45-20-45-45V300z' fill='#dfe7ff'/>
-          <rect x='190' y='330' width='420' height='22' rx='11' fill='#93c5fd'/>
-          <rect x='190' y='390' width='340' height='16' rx='8' fill='#93c5fd' opacity='.8'/>
-          <rect x='190' y='430' width='300' height='16' rx='8' fill='#93c5fd' opacity='.8'/>
-        </g>
-      </svg>
-    `,
-    highlighter: `
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='800' height='800' fill='#f7f9ff'/>
-        <g>
-          <rect x='260' y='110' width='280' height='110' rx='28' fill='#fbbf24'/>
-          <rect x='210' y='200' width='380' height='420' rx='30' fill='#facc15'/>
-          <rect x='310' y='620' width='180' height='100' rx='20' fill='#fde68a'/>
-          <rect x='275' y='260' width='250' height='180' rx='18' fill='#fef9c3'/>
-          <rect x='348' y='330' width='110' height='55' rx='14' fill='#fbbf24'/>
-          <circle cx='400' cy='220' r='14' fill='#fef3c7'/>
-        </g>
-      </svg>
-    `,
-    penSet: `
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='800' height='800' fill='#f5f7ff'/>
-        <g>
-          <rect x='120' y='210' width='150' height='340' rx='24' fill='#0d3b9d'/>
-          <rect x='325' y='170' width='150' height='380' rx='24' fill='#f59e0b'/>
-          <rect x='530' y='230' width='150' height='320' rx='24' fill='#16a34a'/>
-          <rect x='150' y='110' width='90' height='120' rx='20' fill='#1d4ed8'/>
-          <rect x='355' y='80' width='90' height='110' rx='20' fill='#fbbf24'/>
-          <rect x='560' y='120' width='90' height='120' rx='20' fill='#22c55e'/>
-          <rect x='145' y='555' width='160' height='80' rx='16' fill='#dbeafe'/>
-          <rect x='350' y='555' width='160' height='80' rx='16' fill='#fef3c7'/>
-          <rect x='535' y='555' width='160' height='80' rx='16' fill='#dcfce7'/>
-        </g>
-      </svg>
-    `,
+const DIRECCION = "Calle Principal #21, Colonia Centro, Ciudad de México, México";
+
+
+const DIRECCION_MAPA = "Papelería Denhil, Calle Principal 21, Ciudad de México";
+
+const MAPS =
+  "https://www.google.com/maps/search/?api=1&query=" +
+  encodeURIComponent(DIRECCION_MAPA);
+const MAPS_EMBED =
+  "https://www.google.com/maps?q=" +
+  encodeURIComponent(DIRECCION_MAPA) +
+  "&z=16&output=embed";
+
+const FOTOS = {
+  tienda: "/FrentePapeleria.jpeg",     
+  historia: "/PapeDentro.jpeg",
+};
+
+const wa = (texto) =>
+  `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
+
+const NAV = [
+  ["inicio", "Inicio"],
+  ["catalogo", "Catálogo"],
+  ["servicios", "Servicios"],
+  ["promociones", "Promociones"],
+  ["nosotros", "Nosotros"],
+  ["contacto", "Contacto"],
+];
+
+const CATEGORIAS = [
+  ["todos", "🛍️ Todos los productos"],
+  ["escolar", "📚 Papelería Escolar"],
+  ["oficina", "🗂️ Oficina & Archivo"],
+  ["merceria", "🎨 Mercería & Arte"],
+  ["regalos", "🎁 Regalos & Envolturas"],
+  ["computo", "🖥️ Internet & Cómputo"],
+];
+
+const MARCAS = [
+  { nombre: "BIC", logo: "/marcas/bic.png" },
+  { nombre: "Crayola", logo: "/marcas/crayola.png" },
+  { nombre: "Prismacolor", logo: "/marcas/prismacolor.png" },
+];
+
+const PRODUCTOS = [
+  {
+    id: 1,
+    cat: "escolar",
+    tag: "Escolar",
+    marca: "",
+    nombre: "Cuadernos Profesionales",
+    desc: "Tenemos cuadernos profesionales de todas las marcas. Elige el tipo de hoja: cuadro chico, cuadro grande, raya o blancos.",
+    estado: "Surtido Inmediato",
+    img: "/Cuadernos.jpeg",
+    opcionesTitulo: "Tipo de hoja",
+    opciones: ["Cuadro chico", "Cuadro grande", "Raya", "Blancos"]
+  },
+  {
+    id: 2,
+    cat: "escolar",
+    tag: "Escritura",
+    marca: "BIC",
+    nombre: "Plumas BIC (paquete de un solo color)",
+    desc: "Paquetes de plumas BIC de un solo color. Elige azul, negro o rojo.",
+    estado: "Disponible en tienda",
+    img: "/Plumas bic.jpeg",
+    opcionesTitulo: "Color",
+    opciones: ["Azul", "Negro", "Rojo"]
+  },
+  {
+    id: 3,
+    cat: "escolar",
+    tag: "Escritura",
+    marca: "BIC",
+    nombre: "Plumas BIC (paquete de colores mixtos)",
+    desc: "Paquetes de plumas BIC con colores mixtos.",
+    estado: "Disponible en tienda",
+    img: "/PLumascoloresbic.jpeg"
+  },
+  {
+    id: 4,
+    cat: "merceria",
+    tag: "Arte",
+    marca: "Prismacolor",
+    nombre: "Colores Prismacolor",
+    desc: "Cajas de colores Prismacolor. Elige la presentación de 12 o de 24 colores.",
+    estado: "Surtido Inmediato",
+    img: "/Colores prismas 12.jpeg",
+    opcionesTitulo: "Presentación",
+    opciones: ["12 colores", "24 colores"]
+  },
+  {
+    id: 5,
+    cat: "merceria",
+    tag: "Arte",
+    marca: "Crayola",
+    nombre: "Crayola",
+    desc: "Cajas de colores Crayola. Elige la presentación de 12 o de 24 crayolas.",
+    estado: "Surtido Inmediato",
+    img: "Crayolas12.jpeg",
+    opcionesTitulo: "Presentación",
+    opciones: ["12 crayolas", "24 crayolas"]
   }
+];
 
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(drawings[kind] ?? drawings.pen)}`
+const TEMPORADAS = [
+  { icono: "📝", titulo: "Listas Escolares Completas", texto: "Envíanos foto de tu lista oficial por WhatsApp. Nosotros la surtimos por ti y te la entregamos lista para recoger.", cta: "Enviar mi lista por WhatsApp", msg: "Hola, quiero enviarles mi lista escolar para que me la surtan." },
+  { icono: "💀", titulo: "Día de Muertos & Tradiciones", texto: "Papel picado, calaveritas para colorear, cartoncillo naranja y morado, papel crepé y artículos para altares escolares.", cta: "Apartar material de temporada", msg: "Hola, quiero apartar material para Día de Muertos." },
+  { icono: "🎁", titulo: "Navidad y Regalos", texto: "Papel de regalo brillante, moños artesanales confeccionados en tienda, bolsas temáticas y tarjetas de dedicatoria.", cta: "Consultar envolturas especiales", msg: "Hola, quiero consultar envolturas y regalos de Navidad." },
+];
+
+const SERVICIOS = [
+  { icono: "🖨️", titulo: "Copias e Impresiones", texto: "Impresiones láser y tinta continua en blanco y negro o full color en alta definición. Papel bond, opalina, cartulina y fotográfico.", cta: "Enviar archivo por WhatsApp", msg: "Hola, quiero mandar un archivo para imprimir." },
+  { icono: "🧊", titulo: "Enmicados & Plastificados", texto: "Protege tus credenciales, actas, certificados y fotografías contra el agua y el tiempo con enmicado térmico de gran calibre.", cta: "Consultar medidas y formatos", msg: "Hola, quiero consultar medidas y precios de enmicado." },
+  { icono: "📐", titulo: "Maquetas & Proyectos", texto: "Bases de unicel, cascarón, plastilinas, árboles a escala, figuras anatómicas y pegamentos especiales para tareas escolares.", cta: "Cotizar kit para maqueta", msg: "Hola, quiero cotizar un kit para una maqueta." },
+  { icono: "🌐", titulo: "Trámites por Internet", texto: "Descarga e impresión de CURP oficial, actas de nacimiento certificadas, RFC, citas gubernamentales y escaneo directo a USB o correo.", cta: "Asistencia para tu trámite", msg: "Hola, necesito ayuda con un trámite por internet." },
+];
+
+const PASOS = [
+  "Envía tu archivo (PDF, Word, imagen) con tus indicaciones.",
+  "Te confirmamos la recepción y el tiempo estimado de entrega.",
+  "Pasa a mostrador, paga con tu método preferido ¡y listo!",
+];
+
+const quitarAcentos = (s) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+function estaAbierto(ahora) {
+  const dia = ahora.getDay(); // 0 = domingo
+  const min = ahora.getHours() * 60 + ahora.getMinutes();
+  if (dia === 0) return min >= 9 * 60 && min < 15 * 60;
+  return min >= 8 * 60 && min < 20 * 60 + 30;
 }
 
-const mockImages = {
-  facade:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuAhgOobO0Qazeh4Rt_1UJUlVX8TFuocHl5pDBhNuYvHTmUty8_mb_bgs2NU_DzNPcHIWH3YHgAdWve4lYQbKCDeOeWUneKYgorOuisqCYR3gweUKQVTsiXaS_U53Md66g6QFFyDp-lbDFxL7_bK3RoX6e8weQPV99Hc1ZH9NylXhtg8mYo7ucO4r-IOmEaXj9sy3qjZzukGeRTtjgTX74grZJCAvXeB_VA1TCglWbC4oNbnXYa2bDqXcm6qJpbFUJFo8lE',
-  story:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBlhHSi4trpUVwYOgTXf_9icysfw12jq3haR3R0nIUl80XBUKUqjgBN2XFXmYN8iYZpAX9rXsdf960oeiG-y9Rq5x3smVFHX5nHpD7vXWFwqIrogYtygu_fdKdueULQr11_aKyTq9zaTuDx4Tt5on5XxOBbIQT2U5_1tgeLzJ3JSXINYTobdGCQrLuYfwsGBNbsseHt4FtuZqsyQiorA1wjZ5Cw4_-ecPDDQKKltk8Ljz1Krj0_8GzItg',
-  notebook:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuCWtEYXd213U9ZYhc7F1qe1mDsXBNPOuVAE8Urt5AuSsxXo2APfDBU-lX1Kj4U84e1qp1wNImG4FCxXrgTi8NephlwKGDtCLNAhCsdtQ-L5ovZfrG4hWQaW_lCl00elOkiBNaPykJ3H8D6tKP-HGoso4dxfz2H-6NiZwD5V_-sG1Ou6_gJeoJjYNVZFvRKoYD_yxzPaSJ9jNcgD87g6q4-KlS8SGyFmI-cHqwfaqOcteEGnoBwXT6oD0Q',
-  pens: createProductArt('pen'),
-  highlighters: createProductArt('highlighter'),
-  folders: createProductArt('folder'),
-  map:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuC3S31EuN3JK22drub_6547GI_ymm4M5cF1dbjFuPiFqKAJKBjbU5bFWLv8nfS3yIMaJntZ7zaulMCUuoU69G3afsPIZzVm-rIa9kb89Z0skXXL6sw9--o4irqiz0lAXxQz6wFfuqNzXouGgiEi2KtVCDxfEYRuqQ8frvQMcgy-4MyC4yI65ADiJ5BtIg_J09dQcVm7UYoG8jDyfE5ZFHTVo1rGC2qEaavcdkfLHpjHXAlq2zzom_0bKQ',
-  bicPen: createProductArt('pen'),
-  bicMarker: createProductArt('marker'),
-  notebookClassic: createProductArt('notebook'),
-  notebookSpiral: createProductArt('notebook'),
-  notebookHardcover: createProductArt('notebook'),
-  markerSet: createProductArt('marker'),
-  penSet: createProductArt('penSet'),
-}
+export default function App() {
+  const [categoria, setCategoria] = useState("todos");
+  const [busqueda, setBusqueda] = useState("");
+  const [seccion, setSeccion] = useState("inicio");
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [abierto, setAbierto] = useState(estaAbierto(new Date()));
+  const [mostrarArriba, setMostrarArriba] = useState(false);
+  const [verSug, setVerSug] = useState(false);
 
-const products = [
-  {
-    brand: 'BIC',
-    category: 'BIC',
-    tag: 'Pluma',
-    image: mockImages.bicPen,
-    title: 'BIC Cristal Original',
-    description: 'Pluma de tinta gel azul ultra suave, ideal para clases, oficina y apuntes diarios.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'BIC',
-    category: 'BIC',
-    tag: 'Plumón',
-    image: mockImages.bicMarker,
-    title: 'BIC 4 Colores',
-    description: 'Set de plumones con colores vivos para resaltar, decorar y trabajar en proyectos.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'BIC',
-    category: 'BIC',
-    tag: 'Pluma',
-    image: mockImages.bicPen,
-    title: 'BIC Fusión',
-    description: 'Pluma de trazo elegante y cómodo agarre, ideal para escritura prolongada.',
-    status: 'Bajo pedido',
-  },
-  {
-    brand: 'Oxford',
-    category: 'Papelería Escolar',
-    tag: 'Cuaderno',
-    image: mockImages.notebookClassic,
-    title: 'Cuaderno Oxford Profesional',
-    description: 'Papel de alta calidad, cosido y resistente para tareas, apuntes y organización.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'Norma',
-    category: 'Papelería Escolar',
-    tag: 'Cuaderno',
-    image: mockImages.notebookSpiral,
-    title: 'Cuaderno Norma Spiral',
-    description: 'Formato práctico con tapas durables y excelente presentación para la escuela.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'Moleskine',
-    category: 'Papelería Escolar',
-    tag: 'Cuaderno',
-    image: mockImages.notebookHardcover,
-    title: 'Cuaderno Moleskine Clásico',
-    description: 'Diseño premium para ideas, apuntes creativos, listas y proyectos personales.',
-    status: 'Bajo pedido',
-  },
-  {
-    brand: 'BIC',
-    category: 'BIC',
-    tag: 'Marcador',
-    image: mockImages.markerSet,
-    title: 'Marcadores BIC Punta Gruesa',
-    description: 'Excelente para resaltar información en textos, cuadernos y material de estudio.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'BIC',
-    category: 'Material escolar',
-    tag: 'Material',
-    image: mockImages.penSet,
-    title: 'Set de útiles BIC para escuela',
-    description: 'Bolígrafos, resaltadores y accesorios para completar tu kit escolar del día a día.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'Luma',
-    category: 'Arte y manualidades',
-    tag: 'Arte',
-    image: mockImages.highlighters,
-    title: 'Resaltadores Luma Pastel',
-    description: 'Juego de marcadores para proyectos creativos, diagramas y trabajos visuales.',
-    status: 'Disponible en tienda',
-  },
-  {
-    brand: 'Store',
-    category: 'Oficina',
-    tag: 'Organización',
-    image: mockImages.folders,
-    title: 'Carpetas de archivo esenciales',
-    description: 'Soluciones prácticas para ordenar documentos, tareas y materiales de oficina.',
-    status: 'Bajo pedido',
-  },
-]
+  /* ================= 🛒 CARRITO ================= */
+  const [carrito, setCarrito] = useState(() => {
+    try {
+      const guardado = JSON.parse(localStorage.getItem("denhil-carrito-v2"));
+      return Array.isArray(guardado) ? guardado : [];
+    } catch {
+      return [];
+    }
+  });
+  const [carritoAbierto, setCarritoAbierto] = useState(false);
+  const [cliente, setCliente] = useState("");
+  const [notas, setNotas] = useState("");
+  const [aviso, setAviso] = useState("");
+  const [opcion, setOpcion] = useState({}); // opción elegida por producto
 
-const values = [
-  { icon: 'handshake', title: 'Trato Amable', text: 'Atención con paciencia' },
-  { icon: 'diversity_3', title: 'Vocación', text: 'Compromiso genuino' },
-  { icon: 'store', title: 'Comunidad', text: 'Impulso a la zona local' },
-]
+  // Guarda el carrito para que no se pierda al recargar
+  useEffect(() => {
+    try { localStorage.setItem("denhil-carrito-v2", JSON.stringify(carrito)); } catch { /* sin almacenamiento */ }
+  }, [carrito]);
 
-const services = [
-  {
-    icon: 'print',
-    title: 'Copias e Impresiones',
-    description:
-      'Impresiones láser y tinta continua en blanco y negro o full color en alta definición.',
-    action: 'Enviar archivo por WhatsApp',
-  },
-  {
-    icon: 'layers',
-    title: 'Enmicados & Plastificados',
-    description:
-      'Protege tus credenciales, actas, certificados y fotografías contra el agua y el tiempo.',
-    action: 'Consultar medidas y formatos',
-  },
-  {
-    icon: 'architecture',
-    title: 'Maquetas & Proyectos',
-    description:
-      'Bases de unicel, cascarón, plastilinas, árboles a escala y pegamentos especiales.',
-    action: 'Cotizar kit para maqueta',
-  },
-  {
-    icon: 'language',
-    title: 'Trámites por Internet',
-    description:
-      'Descarga e impresión de CURP, actas, RFC y escaneo directo a USB o correo.',
-    action: 'Asistencia para tu trámite',
-  },
-]
+  // Bloquea el scroll de la página y cierra con Escape cuando el carrito está abierto
+  useEffect(() => {
+    document.body.style.overflow = carritoAbierto ? "hidden" : "";
+    const onKey = (e) => { if (e.key === "Escape") setCarritoAbierto(false); };
+    window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [carritoAbierto]);
 
-const paymentMethods = ['Efectivo', 'Tarjetas Débito/Crédito', 'Vales de Despensa']
+  // Oculta el aviso "Agregado" a los 1.8 segundos
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(""), 1800);
+    return () => clearTimeout(t);
+  }, [aviso]);
 
-function App() {
-  const [selectedCategory, setSelectedCategory] = useState('Todo')
+  const lineas = useMemo(
+    () =>
+      carrito
+        .map(({ id, opc, cant }) => ({ p: PRODUCTOS.find((x) => x.id === id), opc, cant }))
+        .filter((l) => l.p && (!l.p.opciones || l.p.opciones.includes(l.opc))),
+    [carrito]
+  );
+  const totalItems = lineas.reduce((n, l) => n + l.cant, 0);
+  const enCarrito = (id) => carrito.filter((c) => c.id === id).reduce((n, c) => n + c.cant, 0);
+  const opcionDe = (p) => (p.opciones ? opcion[p.id] || p.opciones[0] : undefined);
 
-  const filteredProducts =
-    selectedCategory === 'Todo'
-      ? products
-      : products.filter((product) => product.category === selectedCategory)
+  const agregar = (p) => {
+    const opc = opcionDe(p);
+    const igual = (c) => c.id === p.id && c.opc === opc;
+    setCarrito((prev) =>
+      prev.some(igual)
+        ? prev.map((c) => (igual(c) ? { ...c, cant: c.cant + 1 } : c))
+        : [...prev, { id: p.id, opc, cant: 1 }]
+    );
+    setAviso(`✓ ${p.nombre}${opc ? " (" + opc + ")" : ""} agregado al carrito`);
+  };
+  const cambiar = (id, opc, delta) =>
+    setCarrito((prev) =>
+      prev
+        .map((c) => (c.id === id && c.opc === opc ? { ...c, cant: c.cant + delta } : c))
+        .filter((c) => c.cant > 0)
+    );
+  const quitar = (id, opc) => setCarrito((prev) => prev.filter((c) => !(c.id === id && c.opc === opc)));
+  const vaciar = () => setCarrito([]);
+
+  // Mensaje que se envía a WhatsApp
+  const partes = ["Hola, este es mi carrito de Papelería Denhil 🛒"];
+  if (cliente.trim()) partes.push(`Nombre: ${cliente.trim()}`);
+  partes.push(
+    "",
+    "Productos:",
+    ...lineas.map(({ p, opc, cant }) => `• ${cant} x ${p.nombre}${opc ? " - " + opc : ""}`),
+    "",
+    `Total de artículos: ${totalItems}`
+  );
+  if (notas.trim()) partes.push(`Notas: ${notas.trim()}`);
+  partes.push("", "Quedo al pendiente para confirmar disponibilidad y precio. ¡Gracias!");
+  const mensajeCarrito = partes.join("\n");
+
+  // Sección activa en el menú + botón "volver arriba"
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY + 140;
+      let actual = "inicio";
+      NAV.forEach(([id]) => {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= y) actual = id;
+      });
+      setSeccion(actual);
+      setMostrarArriba(window.scrollY > 600);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Actualiza "Abierto / Cerrado" cada minuto
+  useEffect(() => {
+    const t = setInterval(() => setAbierto(estaAbierto(new Date())), 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  const irA = (id) => {
+    setMenuAbierto(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const productos = useMemo(() => {
+    const q = quitarAcentos(busqueda.trim());
+    if (!q) return categoria === "todos" ? PRODUCTOS : PRODUCTOS.filter((p) => p.cat === categoria);
+    return PRODUCTOS.filter((p) =>
+      quitarAcentos(`${p.nombre} ${p.desc} ${p.marca} ${p.tag}`).includes(q)
+    );
+  }, [busqueda, categoria]);
+
+  const buscando = busqueda.trim() !== "";
 
   return (
-    <div className="app-shell">
+    <div className="app">
+      {/* Barra superior */}
       <div className="topbar">
-        <div className="container topbar-inner">
-          <div className="topbar-group">
-            <span className="topbar-item">
-              <span className="material-symbols-outlined">payments</span>
-              Aceptamos efectivo, tarjetas de débito/crédito y vales de despensa
-            </span>
-            <span className="divider">|</span>
-            <span className="topbar-item schedule-item">
-              <span className="material-symbols-outlined">schedule</span>
-              Lun - Sáb: 8:00 AM - 8:30 PM | Dom: 9:00 AM - 3:00 PM
-            </span>
-          </div>
-          <div className="topbar-links">
-            <a href="https://wa.me/" target="_blank" rel="noreferrer">
-              <span className="material-symbols-outlined">chat</span>
-              WhatsApp Tienda Directo
-            </a>
-            <span className="divider">|</span>
-            <a href="https://facebook.com/" target="_blank" rel="noreferrer">
-              <span className="material-symbols-outlined">public</span>
-              Facebook Oficial
-            </a>
-          </div>
+        <div className="wrap topbar-in">
+          <span>💳 Aceptamos efectivo, tarjetas de débito/crédito y vales de despensa</span>
+          <span className="topbar-hide">🕗 Lun - Sáb: 8:00 AM - 8:30 PM | Dom: 9:00 AM - 3:00 PM</span>
+          <span>
+            <a href={wa("Hola, quiero información.")} target="_blank" rel="noreferrer">WhatsApp Tienda Directo</a>
+            {" | "}
+            <a href={FACEBOOK} target="_blank" rel="noreferrer">Facebook Oficial</a>
+          </span>
         </div>
       </div>
 
-      <header className="main-header">
-        <div className="container header-inner">
-          <a className="brand" href="#inicio" aria-label="Papelería Denhil inicio">
-            <div className="brand-mark">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: 'FILL 1' }}>
-                auto_stories
-              </span>
-            </div>
-            <div className="brand-copy">
-              <span className="brand-name">Papelería Denhil</span>
-              <span className="brand-tag">Un Mundo de Todo</span>
-            </div>
-          </a>
+      {/* Navegación */}
+      <header className="nav">
+        <div className="wrap nav-in">
+          <button className="logo" onClick={() => irA("inicio")}>
+            <span className="logo-ico">📖</span>
+            <span>
+              <b>Papelería Denhil</b>
+              <small>UN MUNDO DE TODO</small>
+            </span>
+          </button>
 
-          <nav className="desktop-nav" aria-label="Navegación principal">
-            {navItems.map((item) => (
-              <a key={item.label} href={item.href}>
-                {item.label}
-              </a>
+          <nav className={`links ${menuAbierto ? "open" : ""}`}>
+            {NAV.map(([id, label]) => (
+              <button key={id} className={seccion === id ? "on" : ""} onClick={() => irA(id)}>
+                {label}
+              </button>
             ))}
           </nav>
 
-          <div className="header-actions">
-            <a className="header-link" href="#contacto">
-              Estamos abiertos
-            </a>
-            <a className="primary-button small" href="https://wa.me/" target="_blank" rel="noreferrer">
-              Cotizar
-            </a>
+          <div className="buscar">
+            🔍
+            <input
+              value={busqueda}
+              placeholder="Busca cuadernos, copias..."
+              onChange={(e) => { setBusqueda(e.target.value); setVerSug(true); }}
+              onFocus={() => setVerSug(true)}
+              onBlur={() => setTimeout(() => setVerSug(false), 150)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { setVerSug(false); irA("catalogo"); }
+                if (e.key === "Escape") setVerSug(false);
+              }}
+            />
+            {buscando && (
+              <button className="limpiar" onClick={() => setBusqueda("")} aria-label="Borrar búsqueda">✕</button>
+            )}
+            {buscando && verSug && (
+              <ul className="sugerencias">
+                {productos.length === 0 ? (
+                  <li className="sin">Sin coincidencias, pregúntanos por WhatsApp</li>
+                ) : (
+                  productos.slice(0, 5).map((p) => (
+                    <li
+                      key={p.id}
+                      onMouseDown={() => {
+                        setBusqueda(p.nombre);
+                        setVerSug(false);
+                        irA("catalogo");
+                      }}
+                    >
+                      <span className="sug-ico">{p.img ? <img src={encodeURI(p.img)} alt="" /> : p.icono}</span>
+                      <div><b>{p.nombre}</b><small>{p.tag} • {p.estado}</small></div>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
           </div>
+
+          <a className="btn btn-azul" href={wa("Hola, quiero cotizar.")} target="_blank" rel="noreferrer">
+            💬 Cotizar por WhatsApp
+          </a>
+          {/* 🛒 Botón del carrito */}
+          <button className="btn-carrito" onClick={() => setCarritoAbierto(true)} aria-label="Abrir carrito">
+            🛒<span className="carrito-txt"> Carrito</span>
+            {totalItems > 0 && <i className="badge">{totalItems}</i>}
+          </button>
+          <button className="burger" onClick={() => setMenuAbierto(!menuAbierto)} aria-label="Menú">
+            {menuAbierto ? "✕" : "☰"}
+          </button>
         </div>
       </header>
 
-      <main className="page-main">
-        <section className="hero-section" id="inicio">
-          <div className="container hero-grid">
-            <div className="hero-copy">
-              <span className="eyebrow">Papelería y servicios para escuela, oficina y hogar</span>
-              <h1>Todo lo que necesitas para estudiar, trabajar y crear.</h1>
-              <p>
-                En Papelería Denhil cuidamos cada detalle para que encuentres útiles escolares,
-                materiales de oficina, arte y servicios de impresión con atención cercana y rápida.
-              </p>
-
-              <div className="cta-group">
-                <a className="whatsapp-button" href="https://wa.me/" target="_blank" rel="noreferrer">
-                  <span className="material-symbols-outlined">chat</span>
-                  Cotizar por WhatsApp
-                </a>
-                <a className="secondary-button" href="#catalogo">
-                  Ver catálogo
-                </a>
-              </div>
-
-              <ul className="trust-list">
-                <li>
-                  <span className="material-symbols-outlined">check_circle</span>
-                  Surtido real en tienda
-                </li>
-                <li>
-                  <span className="material-symbols-outlined">check_circle</span>
-                  Atención personalizada
-                </li>
-                <li>
-                  <span className="material-symbols-outlined">check_circle</span>
-                  Pedidos con entrega ágil
-                </li>
-              </ul>
+      {/* Inicio */}
+      <section id="inicio" className="hero">
+        <div className="wrap hero-in">
+          <div>
+            <span className="chip chip-naranja">Comercio local con tradición y confianza familiar</span>
+            <h1>¡Bienvenidos a <span>Papelería Denhil</span>!</h1>
+            <p className="lead">
+              Todo lo que necesitas para tu escuela, oficina y proyectos personales, con la calidez y el servicio que mereces.
+              Desde listas escolares completas hasta impresiones express y trámites digitales.
+            </p>
+            <div className="pagos">
+              <b>💳 Aceptamos efectivo, tarjetas y vales</b>
+              <span>Sin comisiones sorpresa en compras escolares</span>
             </div>
-
-            <div className="hero-visual">
-              <div className="featured-card" style={{ backgroundImage: `linear-gradient(135deg, rgba(30, 64, 175, 0.92), rgba(0, 40, 142, 0.9)), url(${mockImages.facade})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <span className="featured-tag">Lo más solicitado</span>
-                <h3>Material para regreso a clases</h3>
-                <div className="mini-stats">
-                  <div>
-                    <strong>1,200+</strong>
-                    <span>Artículos</span>
-                  </div>
-                  <div>
-                    <strong>4.9/5</strong>
-                    <span>Atención</span>
-                  </div>
-                  <div>
-                    <strong>24h</strong>
-                    <span>Respuesta</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="floating-quote-card">
-                <div className="mini-avatar">D</div>
-                <div>
-                  <p>“Material confiable para cada proyecto y cada día escolar.”</p>
-                  <span>Familia Denhil</span>
-                </div>
-              </div>
+            <div className="botones">
+              <button className="btn btn-azul" onClick={() => irA("catalogo")}>📖 Explorar Catálogo</button>
+              <button className="btn btn-borde" onClick={() => irA("imprimir")}>🖨️ Enviar archivos a imprimir</button>
+            </div>
+            <div className="stats">
+              <div><b>+15 Años</b><span>De servicio comunitario</span></div>
+              <div><b>100%</b><span>Atención personalizada</span></div>
+              <div><b>+3,000</b><span>Artículos en surtido</span></div>
             </div>
           </div>
-        </section>
-
-        <section className="promo-section" id="promociones">
-          <div className="container">
-            <div className="promo-banner">
-              <div className="promo-copy">
-                <span className="promo-badge">¡Promoción Escolar y de Oficina!</span>
-                <h2>
-                  En la compra de 5 productos del mismo precio, ¡el sexto tiene 50% de descuento!
-                </h2>
-                <p>
-                  Aplica en cuadernos, bolígrafos, cartulinas, carpetas y consumibles seleccionados
-                  para que surtas tu lista completa ahorrando más.
-                </p>
-              </div>
-              <div className="promo-action">
-                <a href="https://wa.me/" target="_blank" rel="noreferrer">
-                  <span className="material-symbols-outlined">local_offer</span>
-                  <span>Aprovechar oferta vía WhatsApp</span>
-                </a>
-              </div>
+          <div className="hero-foto">
+            {/* 📷 FOTO DE LA TIENDA: se cambia en FOTOS.tienda (arriba del archivo) */}
+            <div className="foto" style={FOTOS.tienda ? { backgroundImage: `url("${encodeURI(FOTOS.tienda)}")` } : undefined}>
+              {!FOTOS.tienda && <span>🏪</span>}
+            </div>
+            <div className="foto-pie">
+              <div><b>Tienda Física Activa</b><small>Mostrador y atención directa</small></div>
+              <span className={`estado ${abierto ? "si" : "no"}`}>{abierto ? "Abierto Hoy" : "Cerrado ahora"}</span>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="story-section" id="nosotros">
-          <div className="container story-grid">
-            <div className="story-copy">
-              <span className="section-pill">
-                <span className="material-symbols-outlined">favorite</span>
-                Corazón, familia y esfuerzo
-              </span>
-              <h2>Nuestra historia: el sueño de crear un hogar para tus proyectos</h2>
+      {/* Promoción */}
+      <section id="promociones" className="wrap">
+        <div className="promo">
+          <div>
+            <span className="chip chip-amarillo">¡PROMOCIÓN ESCOLAR Y DE OFICINA!</span>
+            <h2>En la compra de 5 productos del mismo precio, ¡el sexto tiene 50% de descuento!</h2>
+            <p>Aplica en cuadernos, bolígrafos, cartulinas, carpetas y consumibles seleccionados para que surtas tu lista completa ahorrando más.</p>
+          </div>
+          <a className="btn btn-amarillo" href={wa("Hola, quiero aprovechar la promoción del sexto producto al 50%.")} target="_blank" rel="noreferrer">
+            🏷️ Aprovechar oferta vía WhatsApp
+          </a>
+        </div>
+      </section>
 
-              <div className="story-text">
-                <p>
-                  Todo comenzó con la entrega y dedicación de su fundadora, quien con paciencia y
-                  maestría elaboraba forros artesanales cosidos a mano para cuadernos escolares.
-                </p>
+      {/* Historia */}
+      <section id="nosotros" className="wrap historia">
+        <div>
+          <span className="chip chip-azul">♡ Corazón, familia y esfuerzo</span>
+          <h2>Nuestra Historia: El sueño de crear un hogar para tus proyectos</h2>
+          <p>
+            Todo comenzó con la entrega y dedicación de su fundadora, quien con paciencia y maestría elaboraba forros artesanales
+            cosidos a mano para cuadernos escolares. Con cada libreta forrada con esmero, nació el compromiso de acompañar a
+            padres de familia, estudiantes y maestros en cada ciclo educativo.
+          </p>
+          <p>
+            Hoy, Papelería Denhil sigue siendo ese espacio cercano donde no eres un número de orden, sino un vecino al que
+            escuchamos y ayudamos a encontrar exactamente lo que necesita.
+          </p>
+          <div className="valores">
+            <div>🤝<b>Trato Amable</b><small>Atención con paciencia</small></div>
+            <div>👥<b>Vocación</b><small>Compromiso genuino</small></div>
+            <div>🏘️<b>Comunidad</b><small>Impulso a la zona local</small></div>
+          </div>
+        </div>
+        <div className="historia-foto">
+          {/* 📷 FOTO DE LA HISTORIA: se cambia en FOTOS.historia (arriba del archivo) */}
+          <div className="foto" style={FOTOS.historia ? { backgroundImage: `url("${encodeURI(FOTOS.historia)}")` } : undefined}>
+            {!FOTOS.historia && <span>📚</span>}
+          </div>
+          <blockquote>
+            “Desde el primer cuaderno forrado a mano, nuestro compromiso siempre ha sido servir a cada familia con esmero.”
+            <cite>— Familia Denhil</cite>
+          </blockquote>
+        </div>
+      </section>
 
-                <div className="story-panel">
-                  <h3>
-                    <span className="material-symbols-outlined">family_star</span>
-                    ¿Por qué el nombre «DENHIL»?
-                  </h3>
-                  <p>
-                    Detrás de nuestro letrero existe una entrañable historia familiar: <strong>«DEN»</strong>
-                    rinde tributo a las primeras letras del nombre de su querida hija, mientras que
-                    <strong>«HIL»</strong> proviene de su propio nombre de cariño, Maria Nilla.
-                  </p>
-                </div>
+      {/* Catálogo */}
+      <section id="catalogo" className="wrap">
+        <small className="kicker">📦 CATÁLOGO EXTENSO & SURTIDO INMEDIATO</small>
+        <div className="cat-head">
+          <div>
+            <h2>Explora Nuestro Mundo de Todo</h2>
+            <p className="sub">Selecciona tus artículos y pide cotización o apartado directo vía WhatsApp para entrega ágil en tienda.</p>
+          </div>
+          <a className="link" href={wa("Hola, les envío mi lista completa para cotizar.")} target="_blank" rel="noreferrer">
+            ¿Buscas una lista completa? Envíala aquí →
+          </a>
+        </div>
 
-                <p>
-                  Hoy, Papelería Denhil sigue siendo ese espacio cercano donde no eres un número de
-                  orden, sino un vecino al que escuchamos y ayudamos a encontrar exactamente lo que
-                  necesita.
-                </p>
-              </div>
+        <div className="tabs">
+          {CATEGORIAS.map(([id, label]) => (
+            <button
+              key={id}
+              className={!buscando && categoria === id ? "on" : ""}
+              onClick={() => { setBusqueda(""); setCategoria(id); }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-              <div className="value-grid">
-                {values.map((value) => (
-                  <div key={value.title} className="value-card">
-                    <span className="material-symbols-outlined">{value.icon}</span>
-                    <h4>{value.title}</h4>
-                    <p>{value.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="story-visual">
-              <div className="story-image-frame">
+        {/* 🏷️ MARCAS: se editan en el arreglo MARCAS (arriba del archivo) */}
+        <div className="marcas">
+          <span>MARCAS LÍDERES EN INVENTARIO:</span>
+          <div>
+            {MARCAS.map((m) =>
+              m.logo ? (
                 <img
-                  src={mockImages.story}
-                  alt="Espacio artesanal de papelería con materiales y trabajo familiar"
+                  key={m.nombre}
+                  src={m.logo}
+                  alt={m.nombre}
+                  title={m.nombre}
+                  className="logo-marca"
+                  onError={(e) => { e.currentTarget.replaceWith(Object.assign(document.createElement("em"), { textContent: m.nombre })); }}
                 />
-              </div>
-              <div className="quote-card">
-                <p>
-                  “Desde el primer cuaderno forrado a mano, nuestro compromiso siempre ha sido
-                  servir a cada familia con esmero.”
-                </p>
-                <span>— Familia Denhil</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="catalog-section" id="catalogo">
-          <div className="container catalog-shell">
-            <div className="section-heading">
-              <div>
-                <span className="section-pill compact">
-                  <span className="material-symbols-outlined">inventory_2</span>
-                  Catálogo Extenso &amp; Surtido Inmediato
-                </span>
-                <h2>Explora Nuestro Mundo de Todo</h2>
-              </div>
-              <a href="https://wa.me/" target="_blank" rel="noreferrer">
-                ¿Buscas una lista completa? Envíala aquí
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </a>
-            </div>
-
-            <div className="filter-row" aria-label="Categorías del catálogo">
-              {categories.map((category) => (
-                <button
-                  key={category.label}
-                  type="button"
-                  className={selectedCategory === category.label ? 'filter-pill active' : 'filter-pill'}
-                  onClick={() => setSelectedCategory(category.label)}
-                >
-                  <span className="material-symbols-outlined">{category.icon}</span>
-                  {category.label}
-                </button>
-              ))}
-            </div>
-
-            {filteredProducts.length === 0 ? (
-              <div className="empty-state">No hay productos en esta categoría por el momento.</div>
-            ) : (
-              <div className="product-grid">
-                {filteredProducts.map((product) => (
-                  <article key={`${product.title}-${product.brand}`} className="product-card">
-                    <div className="product-image-wrap">
-                      <img src={product.image} alt={product.title} />
-                      <span className="product-tag">{product.tag}</span>
-                    </div>
-                    <div className="product-body">
-                      <span className="product-brand">{product.brand}</span>
-                      <h3>{product.title}</h3>
-                      <p>{product.description}</p>
-                    </div>
-                    <div className="product-footer">
-                      <span className="status-pill">{product.status}</span>
-                      <a href="https://wa.me/" target="_blank" rel="noreferrer">
-                        Cotizar por WhatsApp
-                      </a>
-                    </div>
-                  </article>
-                ))}
-              </div>
+              ) : (
+                <em key={m.nombre}>{m.nombre}</em>
+              )
             )}
-          </div>
-        </section>
-
-        <section className="seasonal-section">
-          <div className="container seasonal-shell">
-            <div className="seasonal-header">
-              <div>
-                <span className="section-tag">Temáticas Dinámicas</span>
-                <h3>Especial de Temporadas Denhil</h3>
-                <p>Materiales preparados para festividades, manualidades y listas del ciclo escolar.</p>
-              </div>
-              <a href="https://wa.me/" target="_blank" rel="noreferrer">
-                <span className="material-symbols-outlined">help</span>
-                Consultar materiales específicos
-              </a>
-            </div>
-
-            <div className="seasonal-grid">
-              <div className="seasonal-card">
-                <div className="icon-box">
-                  <span className="material-symbols-outlined">backpack</span>
-                </div>
-                <h4>Listas Escolares Completas</h4>
-                <p>
-                  Envíanos foto de tu lista oficial por WhatsApp. Nosotros la surtimos por ti y te la
-                  entregamos lista para recoger.
-                </p>
-                <a href="https://wa.me/">
-                  Enviar mi lista por WhatsApp
-                  <span className="material-symbols-outlined">chevron_right</span>
-                </a>
-              </div>
-
-              <div className="seasonal-card">
-                <div className="icon-box">
-                  <span className="material-symbols-outlined">celebration</span>
-                </div>
-                <h4>Día de Muertos &amp; Tradiciones</h4>
-                <p>
-                  Papel picado, calaveritas para colorear, cartoncillo naranja y morado, papel crepé y
-                  artículos para altares escolares.
-                </p>
-                <a href="https://wa.me/">
-                  Apartar material de temporada
-                  <span className="material-symbols-outlined">chevron_right</span>
-                </a>
-              </div>
-
-              <div className="seasonal-card">
-                <div className="icon-box">
-                  <span className="material-symbols-outlined">redeem</span>
-                </div>
-                <h4>Navidad y Regalos</h4>
-                <p>
-                  Papel de regalo brillante, moños artesanales confeccionados en tienda, bolsas
-                  temáticas y tarjetas de dedicatoria.
-                </p>
-                <a href="https://wa.me/">
-                  Consultar envolturas especiales
-                  <span className="material-symbols-outlined">chevron_right</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="services-section" id="servicios">
-          <div className="container services-shell">
-            <div className="services-header">
-              <span className="section-tag">Soluciones Prácticas</span>
-              <h2>Servicios de Cómputo e Impresión</h2>
-              <p>
-                Ahorra tiempo y filas. Realizamos tus impresiones y trámites con rapidez y la máxima
-                resolución.
-              </p>
-            </div>
-
-            <div className="service-grid">
-              {services.map((service) => (
-                <article key={service.title} className="service-card">
-                  <div className="service-icon">
-                    <span className="material-symbols-outlined">{service.icon}</span>
-                  </div>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
-                  <a href="https://wa.me/" target="_blank" rel="noreferrer">
-                    <span>{service.action}</span>
-                    <span className="material-symbols-outlined">send</span>
-                  </a>
-                </article>
-              ))}
-            </div>
-
-            <div className="service-banner">
-              <div className="service-banner-copy">
-                <span className="service-banner-badge">
-                  <span className="material-symbols-outlined">bolt</span>
-                  Servicio Rápido Cero Filas
-                </span>
-                <h3>Envía tus archivos para imprimir y recógelos listos</h3>
-                <p>
-                  ¿Llevas prisa para la escuela o la oficina? Mándanos tus documentos por WhatsApp o
-                  correo electrónico especificando el formato.
-                </p>
-                <div className="service-banner-actions">
-                  <a className="whatsapp-button" href="https://wa.me/" target="_blank" rel="noreferrer">
-                    <span className="material-symbols-outlined">chat</span>
-                    Enviar por WhatsApp
-                  </a>
-                  <a className="ghost-button" href="mailto:papeleriadenhil@ejemplo.com">
-                    <span className="material-symbols-outlined">mail</span>
-                    Enviar por Correo
-                  </a>
-                </div>
-              </div>
-
-              <div className="process-card">
-                <h4>
-                  <span className="material-symbols-outlined">checklist</span>
-                  ¿Cómo funciona?
-                </h4>
-                <ol>
-                  <li>
-                    <span>1</span>
-                    Envía tu archivo con tus indicaciones.
-                  </li>
-                  <li>
-                    <span>2</span>
-                    Te confirmamos la recepción y el tiempo estimado.
-                  </li>
-                  <li>
-                    <span>3</span>
-                    Pasa a mostrador, paga y ¡listo!
-                  </li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="contact-section" id="contacto">
-          <div className="container contact-shell">
-            <div className="contact-header">
-              <span className="section-tag">Siempre Cerca de Ti</span>
-              <h2>Ubicación, Horarios y Contacto</h2>
-              <p>
-                Visítanos en nuestra tienda física o comunícate directamente con nuestro equipo de
-                atención.
-              </p>
-            </div>
-
-            <div className="contact-grid">
-              <div className="contact-details">
-                <div className="detail-card">
-                  <div className="detail-icon">
-                    <span className="material-symbols-outlined">location_on</span>
-                  </div>
-                  <div>
-                    <h4>Dirección de la Tienda</h4>
-                    <p>
-                      Papelería Denhil — Calle Principal #21, Colonia Centro, Ciudad de México,
-                      México.
-                    </p>
-                    <a href="https://maps.google.com" target="_blank" rel="noreferrer">
-                      Cómo llegar en Google Maps
-                      <span className="material-symbols-outlined">open_in_new</span>
-                    </a>
-                  </div>
-                </div>
-
-                <div className="detail-card">
-                  <div className="detail-icon">
-                    <span className="material-symbols-outlined">schedule</span>
-                  </div>
-                  <div>
-                    <h4>Horario de Atención</h4>
-                    <div className="schedule-list">
-                      <p>
-                        <span>Lunes a Sábado:</span>
-                        <span>8:00 AM – 8:30 PM</span>
-                      </p>
-                      <p>
-                        <span>Domingo:</span>
-                        <span>9:00 AM – 3:00 PM</span>
-                      </p>
-                    </div>
-                    <span className="status-badge">Abierto en horario extendido en temporada escolar</span>
-                  </div>
-                </div>
-
-                <div className="social-card">
-                  <div className="social-header">
-                    <span className="material-symbols-outlined">public</span>
-                    <div>
-                      <h4>Comunidad en Facebook</h4>
-                      <p>Dinámicas, avisos de descanso y novedades</p>
-                    </div>
-                  </div>
-                  <a href="https://facebook.com/" target="_blank" rel="noreferrer">
-                    Síguenos en Facebook
-                    <span className="material-symbols-outlined">arrow_forward</span>
-                  </a>
-                </div>
-              </div>
-
-              <div className="map-panel">
-                <div className="map-surface" style={{ backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)), url(${mockImages.map})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                  <div className="map-pin-card">
-                    <div className="map-pin-icon">
-                      <span className="material-symbols-outlined" style={{ fontVariationSettings: 'FILL 1' }}>
-                        location_on
-                      </span>
-                    </div>
-                    <h4>Papelería Denhil</h4>
-                    <p>Calle Principal #21 • Mostrador abierto</p>
-                    <a href="https://maps.google.com" target="_blank" rel="noreferrer">
-                      Abrir Navegación GPS
-                      <span className="material-symbols-outlined">navigation</span>
-                    </a>
-                  </div>
-                </div>
-                <div className="map-note">
-                  <span className="material-symbols-outlined">info</span>
-                  Tus pedidos se atienden al instante por WhatsApp o directo en mostrador
-                  <a href="https://wa.me/" target="_blank" rel="noreferrer">
-                    Chatear ahora
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-brand">
-            <a href="#inicio">Papelería Denhil</a>
-            <p>Un Mundo de Todo</p>
-            <span>
-              Tradición familiar y servicio comprometido con el aprendizaje y los proyectos de toda
-              nuestra comunidad escolar y empresarial.
-            </span>
-          </div>
-
-          <div className="footer-column">
-            <h4>Catálogo y Servicios</h4>
-            <ul>
-              <li><a href="#catalogo">Catálogo Escolar</a></li>
-              <li><a href="#servicios">Servicios de Impresión</a></li>
-              <li><a href="#promociones">Promociones del Mes</a></li>
-            </ul>
-          </div>
-
-          <div className="footer-column">
-            <h4>Conócenos</h4>
-            <ul>
-              <li><a href="#nosotros">Historia Denhil</a></li>
-              <li><a href="#contacto">Ubicación y Horarios</a></li>
-              <li><a href="#contacto">Aviso de Privacidad</a></li>
-            </ul>
-          </div>
-
-          <div className="footer-column">
-            <h4>Métodos de Pago</h4>
-            <div className="payment-tags">
-              {paymentMethods.map((method) => (
-                <span key={method}>{method}</span>
-              ))}
-            </div>
-            <p>¿Dudas sobre material o surtido especial?</p>
-            <a className="footer-whatsapp" href="https://wa.me/" target="_blank" rel="noreferrer">
-              <span className="material-symbols-outlined">chat</span>
-              Contactar a Mostrador
-            </a>
           </div>
         </div>
 
-        <div className="container footer-bar">
-          <p>© 2024 Papelería Denhil. Un Mundo de Todo. Todos los derechos reservados.</p>
-          <div>
-            <span>Hecho con dedicación familiar</span>
-            <span className="dot">•</span>
-            <a href="#inicio">Volver arriba</a>
+        <h3 className="mas-vendido">
+          {buscando ? `🔍 Resultados para “${busqueda.trim()}” (${productos.length})` : "⭐ Lo Más Vendido en Mostrador"}
+        </h3>
+
+        {productos.length === 0 ? (
+          <div className="vacio">
+            <p>{buscando ? "No encontramos ese artículo en el catálogo, ¡pero puede que lo tengamos en tienda!" : "Estamos subiendo los productos de esta categoría. ¡Pregúntanos por WhatsApp lo que necesites!"}</p>
+            <a className="btn btn-azul" href={wa(buscando ? `Hola, ¿tienen "${busqueda.trim()}"?` : "Hola, quiero consultar productos de esta categoría.")} target="_blank" rel="noreferrer">
+              💬 Preguntar por WhatsApp
+            </a>
           </div>
+        ) : (
+          <div className="grid4">
+            {productos.map((p) => (
+              <article className="card" key={p.id}>
+                {/* 📷 FOTO DEL PRODUCTO: se cambia en el campo "img" de cada producto (arreglo PRODUCTOS) */}
+                <div className="card-img">
+                  <span className="tag">{p.tag.toUpperCase()}</span>
+                  {p.img ? (
+                    <img
+                      src={encodeURI(p.img)}
+                      alt={p.nombre}
+                      loading="lazy"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                  ) : null}
+                  {/* El emoji queda de respaldo detrás de la foto */}
+                  {p.icono && <span className="ico">{p.icono}</span>}
+                </div>
+                <div className="card-body">
+                  {/* 🏷️ MARCA DEL PRODUCTO: se cambia en el campo "marca" de cada producto */}
+                  {p.marca && <small>Marca: {p.marca}</small>}
+                  <h4>{p.nombre}</h4>
+                  <p>{p.desc}</p>
+                  {p.opciones && (
+                    <label className="opcion">
+                      <span>{p.opcionesTitulo}:</span>
+                      <select value={opcionDe(p)} onChange={(e) => setOpcion({ ...opcion, [p.id]: e.target.value })}>
+                        {p.opciones.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </label>
+                  )}
+                  <span className="stock">● {p.estado}</span>
+                  {enCarrito(p.id) > 0 && <span className="en-carrito">✓ {enCarrito(p.id)} en tu carrito</span>}
+                  <button className="btn btn-azul btn-full" onClick={() => agregar(p)}>
+                    🛒 Agregar al carrito
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Temporadas */}
+      <section className="wrap">
+        <div className="temporadas">
+          <div className="cat-head">
+            <div>
+              <small className="kicker naranja">TEMÁTICAS DINÁMICAS</small>
+              <h2>Especial de Temporadas Denhil</h2>
+              <p className="sub">Materiales preparados para las festividades, manualidades y listas del ciclo escolar.</p>
+            </div>
+            <a className="btn btn-borde btn-chico" href={wa("Hola, quiero consultar materiales específicos.")} target="_blank" rel="noreferrer">
+              ❓ Consultar materiales específicos
+            </a>
+          </div>
+          <div className="grid3">
+            {TEMPORADAS.map((t) => (
+              <div className="card-plana" key={t.titulo}>
+                <span className="ico-sq">{t.icono}</span>
+                <h4>{t.titulo}</h4>
+                <p>{t.texto}</p>
+                <a className="link" href={wa(t.msg)} target="_blank" rel="noreferrer">{t.cta} ›</a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Servicios */}
+      <section id="servicios" className="wrap centro">
+        <small className="kicker naranja">SOLUCIONES PRÁCTICAS</small>
+        <h2 className="azul-grande">Servicios de Cómputo e Impresión</h2>
+        <p className="sub">Ahorra tiempo y filas. Realizamos tus impresiones y trámites con rapidez y la máxima resolución.</p>
+        <div className="grid4 izq">
+          {SERVICIOS.map((s) => (
+            <div className="card-plana" key={s.titulo}>
+              <span className="ico-sq azul">{s.icono}</span>
+              <h4>{s.titulo}</h4>
+              <p>{s.texto}</p>
+              <a className="link" href={wa(s.msg)} target="_blank" rel="noreferrer">{s.cta} ▹</a>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Enviar archivos */}
+      <section id="imprimir" className="wrap">
+        <div className="rapido">
+          <div>
+            <span className="chip chip-oscuro">⚡ Servicio Rápido Cero Filas</span>
+            <h2>Envía tus archivos para imprimir y recógelos listos</h2>
+            <p>
+              ¿Llevas prisa para la escuela o la oficina? Mándanos tus documentos por WhatsApp
+              especificando el formato (color o blanco y negro, doble cara, engrapado). Te confirmamos al instante y los recoges en mostrador sin esperar.
+            </p>
+            <div className="botones">
+              <a className="btn btn-amarillo" href={wa("Hola, les envío un archivo para imprimir.")} target="_blank" rel="noreferrer">💬 Enviar por WhatsApp</a>
+            </div>
+          </div>
+          <div className="como">
+            <h4>☑ ¿Cómo funciona?</h4>
+            <ol>{PASOS.map((p, i) => <li key={i}><b>{i + 1}</b>{p}</li>)}</ol>
+          </div>
+        </div>
+      </section>
+
+      {/* Contacto */}
+      <section id="contacto" className="wrap centro">
+        <small className="kicker naranja">SIEMPRE CERCA DE TI</small>
+        <h2 className="azul-grande">Ubicación, Horarios y Contacto</h2>
+        <p className="sub">Visítanos en nuestra tienda física o comunícate directamente con nuestro equipo de atención.</p>
+        <div className="contacto izq">
+          <div className="col">
+            <div className="caja">
+              <span className="ico-sq">📍</span>
+              <div>
+                <h4>Dirección de la Tienda</h4>
+                {/* 📍 DIRECCIÓN: se cambia en la constante DIRECCION (arriba del archivo) */}
+                <p>Papelería Denhil — {DIRECCION}.</p>
+                <a className="link" href={MAPS} target="_blank" rel="noreferrer">Cómo llegar en Google Maps ↗</a>
+              </div>
+            </div>
+            <div className="caja">
+              <span className="ico-sq">🕗</span>
+              <div>
+                <h4>Horario de Atención</h4>
+                <div className="horario"><b>Lunes a Sábado:</b><span>8:00 AM - 8:30 PM</span></div>
+                <div className="horario"><b>Domingo:</b><span>9:00 AM - 3:00 PM</span></div>
+                <span className={`estado ${abierto ? "si" : "no"}`}>
+                  {abierto ? "Abierto ahora" : "Cerrado ahora"}
+                </span>
+              </div>
+            </div>
+            <div className="caja fb">
+              <div>
+                <h4>🌐 Comunidad en Facebook</h4>
+                <p>Dinámicas, avisos de descanso y novedades</p>
+                <a className="btn btn-azul btn-full" href={FACEBOOK} target="_blank" rel="noreferrer">Síguenos en Facebook →</a>
+              </div>
+            </div>
+          </div>
+          <div className="mapa">
+            {/* 🗺️ MAPA REAL: se genera con DIRECCION_MAPA (arriba del archivo) */}
+            <div className="mapa-embed">
+              <iframe
+                title="Ubicación de Papelería Denhil"
+                src={MAPS_EMBED}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+            <div className="mapa-pie">
+              <span>💡 Tus pedidos se atienden al instante por WhatsApp o directo en mostrador</span>
+              <a className="link" href={MAPS} target="_blank" rel="noreferrer">Abrir en Google Maps ↗</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="wrap foot-grid">
+          <div>
+            <h4>Papelería Denhil</h4>
+            <small className="naranja-t">UN MUNDO DE TODO</small>
+            <p>Tradición familiar y servicio comprometido con el aprendizaje y los proyectos de toda nuestra comunidad escolar y empresarial.</p>
+          </div>
+          <div>
+            <h4>Catálogo y Servicios</h4>
+            <button onClick={() => { setBusqueda(""); setCategoria("todos"); irA("catalogo"); }}>Catálogo Escolar</button>
+            <button onClick={() => irA("servicios")}>Servicios de Impresión</button>
+            <button onClick={() => irA("promociones")}>Promociones del Mes</button>
+          </div>
+          <div>
+            <h4>Conócenos</h4>
+            <button onClick={() => irA("nosotros")}>Historia Denhil</button>
+            <button onClick={() => irA("contacto")}>Ubicación y Horarios</button>
+            <button onClick={() => alert("Aviso de privacidad: aquí puedes agregar tu texto o enlazar a tu documento.")}>Aviso de Privacidad</button>
+          </div>
+          <div>
+            <h4>Métodos de Pago</h4>
+            <div className="pills"><em>Efectivo</em><em>Tarjetas Débito/Crédito</em><em>Vales de Despensa</em></div>
+            <p>¿Dudas sobre material o surtido especial?</p>
+            <a className="link" href={wa("Hola, tengo una duda sobre material.")} target="_blank" rel="noreferrer">💬 Contactar a Mostrador</a>
+          </div>
+        </div>
+        <div className="wrap foot-pie">
+          <span>© {new Date().getFullYear()} Papelería Denhil. Un Mundo de Todo. Todos los derechos reservados.</span>
+          <span>Hecho con dedicación familiar • <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Volver arriba</button></span>
         </div>
       </footer>
 
-      <div className="floating-button-wrap">
-        <a className="floating-bubble" href="https://wa.me/" target="_blank" rel="noreferrer">
-          <span className="pulse-dot" />
-          En línea • <strong>Cotiza aquí sin compromiso</strong>
-        </a>
-        <a
-          aria-label="Cotizar por WhatsApp"
-          className="fab-button"
-          href="https://wa.me/"
-          target="_blank"
-          rel="noreferrer"
-          title="Cotizar por WhatsApp"
-        >
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: 'FILL 1' }}>
-            chat
-          </span>
-        </a>
-      </div>
-    </div>
-  )
-}
+      {/* 🛒 Panel del carrito */}
+      {carritoAbierto && <div className="overlay" onClick={() => setCarritoAbierto(false)} />}
+      <aside className={`drawer ${carritoAbierto ? "open" : ""}`} aria-hidden={!carritoAbierto}>
+        <div className="drawer-head">
+          <h3>🛒 Mi carrito</h3>
+          <button onClick={() => setCarritoAbierto(false)} aria-label="Cerrar carrito">✕</button>
+        </div>
 
-export default App
+        {lineas.length === 0 ? (
+          <div className="drawer-vacio">
+            <span>🛒</span>
+            <p>Tu carrito está vacío. Agrega productos del catálogo y envíanos tu pedido por WhatsApp.</p>
+            <button className="btn btn-azul" onClick={() => { setCarritoAbierto(false); irA("catalogo"); }}>
+              Ver catálogo
+            </button>
+          </div>
+        ) : (
+          <>
+            <ul className="drawer-lista">
+              {lineas.map(({ p, opc, cant }) => (
+                <li key={p.id + "|" + (opc || "")}>
+                  <span className="mini">
+                    {p.img && <img src={encodeURI(p.img)} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
+                    {p.icono}
+                  </span>
+                  <div className="info">
+                    <b>{p.nombre}</b>
+                    <small>{[p.marca, opc].filter(Boolean).join(" • ")}</small>
+                    <div className="cant">
+                      <button onClick={() => cambiar(p.id, opc, -1)} aria-label="Quitar uno">−</button>
+                      <span>{cant}</span>
+                      <button onClick={() => cambiar(p.id, opc, 1)} aria-label="Agregar uno">+</button>
+                    </div>
+                  </div>
+                  <button className="quitar" onClick={() => quitar(p.id, opc)} aria-label="Eliminar producto">🗑️</button>
+                </li>
+              ))}
+            </ul>
+            <div className="drawer-pie">
+              <input
+                value={cliente}
+                onChange={(e) => setCliente(e.target.value)}
+                placeholder="Tu nombre (opcional)"
+              />
+              <textarea
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                placeholder="Notas o indicaciones (opcional)"
+                rows={2}
+              />
+              <div className="total"><span>Total de artículos</span><b>{totalItems}</b></div>
+              <a className="btn btn-verde btn-full" href={wa(mensajeCarrito)} target="_blank" rel="noreferrer">
+                📲 Enviar pedido por WhatsApp
+              </a>
+              <button className="vaciar" onClick={vaciar}>Vaciar carrito</button>
+            </div>
+          </>
+        )}
+      </aside>
+
+      {aviso && <div className="toast">{aviso}</div>}
+
+      {/* Chat flotante */}
+      <a className="chat" href={wa("Hola, quiero cotizar sin compromiso.")} target="_blank" rel="noreferrer">
+        <span className="pill"><i /> En línea • <b>Cotiza aquí sin compromiso</b></span>
+        <span className="chat-btn">💬</span>
+      </a>
+
+      {mostrarArriba && (
+        <button className="subir" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Subir">↑</button>
+      )}
+    </div>
+  );
+}
